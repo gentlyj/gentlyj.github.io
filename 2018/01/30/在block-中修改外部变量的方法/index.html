@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2018/01/30/在block-中修改外部变量的方法/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="问题产生场景:使用 FMDB 时，要求线程安全，就使用FMDatabaseQueue，所有操作都在 inDatabase 中操作，保证数据库操作的串行，不会多线程修改数据库操作数据错乱。代码如下： 12345678910[self.queue inDatabase:^(FMDatabase *db) &amp;#123;        if ([self.db open]) &amp;#123;">
-<meta property="og:updated_time" content="2018-01-30T07:30:04.560Z">
+<meta property="og:updated_time" content="2018-01-30T07:35:43.504Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="在block 中修改外部变量的方法">
 <meta name="twitter:description" content="问题产生场景:使用 FMDB 时，要求线程安全，就使用FMDatabaseQueue，所有操作都在 inDatabase 中操作，保证数据库操作的串行，不会多线程修改数据库操作数据错乱。代码如下： 12345678910[self.queue inDatabase:^(FMDatabase *db) &amp;#123;        if ([self.db open]) &amp;#123;">
@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Accueil
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -258,7 +258,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posté le</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-01-30T15:06:27+08:00">
                 2018-01-30
@@ -299,11 +299,11 @@
 
       
         <h3 id="问题产生场景"><a href="#问题产生场景" class="headerlink" title="问题产生场景:"></a>问题产生场景:</h3><p>使用 FMDB 时，要求线程安全，就使用FMDatabaseQueue，所有操作都在 inDatabase 中操作，保证数据库操作的串行，不会多线程修改数据库操作数据错乱。代码如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[self.queue inDatabase:^(FMDatabase *db) &#123;</span><br><span class="line">        if ([self.db open]) &#123;</span><br><span class="line">            NSLog(@&quot;打开数据库成功&quot;);</span><br><span class="line">            //创建表格</span><br><span class="line">			  return YES;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            NSLog(@&quot;打开数据库失败&quot;);</span><br><span class="line">            return NO;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[self.queue inDatabase:^(FMDatabase *db) &#123;</span><br><span class="line">        if ([self.db open]) &#123;</span><br><span class="line">            NSLog(@&quot;打开数据库成功&quot;);</span><br><span class="line">            //创建表格</span><br><span class="line">            return YES;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            NSLog(@&quot;打开数据库失败&quot;);</span><br><span class="line">            return NO;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>此时发现 block 中不能直接 return， 因为只能 return 该 block， 不会 return 当前方法。</p>
-<p>进而发现在 block 中也无法修改外边基本数据类型，因为闭包是直接拷贝外部变量值，在闭包中不能改变外部变量值。于是问题变成，<strong>如果在闭包中修改外部变量值。</strong></p>
-<h3 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">//用__block 修饰</span><br><span class="line">__block BOOL success;</span><br><span class="line">[self.queue inDatabase:^(FMDatabase *db) &#123;</span><br><span class="line">        if ([self.db open]) &#123;</span><br><span class="line">            NSLog(@&quot;打开数据库成功&quot;);</span><br><span class="line">            //创建表格</span><br><span class="line">              success = YES;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            NSLog(@&quot;打开数据库失败&quot;);</span><br><span class="line">            success = NO;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">return success;</span><br></pre></td></tr></table></figure>
-<p>__block 的作用就是，把栈中的外部变量拷贝到堆上，达到在闭包中访问的效果。</p>
+<p>进而发现在 block 中也无法修改block外基本数据类型，因为闭包是直接拷贝外部变量值，不能改变外部变量。于是问题变成，<strong>如果在闭包中修改外部变量值。</strong></p>
+<h3 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">//用__block 修饰</span><br><span class="line">__block BOOL success;</span><br><span class="line">[self.queue inDatabase:^(FMDatabase *db) &#123;</span><br><span class="line">        if ([self.db open]) &#123;</span><br><span class="line">            NSLog(@&quot;打开数据库成功&quot;);</span><br><span class="line">            //创建表格</span><br><span class="line">            success = YES;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            NSLog(@&quot;打开数据库失败&quot;);</span><br><span class="line">            success = NO;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">return success;</span><br></pre></td></tr></table></figure>
+<p>__block 的作用就是，把栈中的外部变量拷贝到堆上，达到在闭包中可以访问修改的效果。</p>
 
       
     </div>
@@ -390,10 +390,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table Des Matières
+            Inhaltsverzeichnis
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Ensemble
+            Übersicht
           </li>
         </ul>
       
@@ -414,7 +414,7 @@
                 <a href="/archives/">
               
                   <span class="site-state-item-count">2</span>
-                  <span class="site-state-item-name">articles</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -480,7 +480,7 @@
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
@@ -488,7 +488,7 @@
 
 
 
-  <div class="theme-info">Thème &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
 
 
 
