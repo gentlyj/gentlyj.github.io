@@ -79,12 +79,16 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="问题产生场景:使用 FMDB 时，要求线程安全，就使用FMDatabaseQueue，所有操作都在 inDatabase 中操作，保证数据库操作的串行，不会多线程修改数据库操作数据错乱。代码如下： 12345678910[self.queue inDatabase:^(FMDatabase *db) &amp;#123;        if ([self.db open]) &amp;#123;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在block 中修改外部变量的方法">
+<meta property="og:url" content="http://yoursite.com/2018/01/30/在block-中修改外部变量的方法/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="问题产生场景:使用 FMDB 时，要求线程安全，就使用FMDatabaseQueue，所有操作都在 inDatabase 中操作，保证数据库操作的串行，不会多线程修改数据库操作数据错乱。代码如下： 12345678910[self.queue inDatabase:^(FMDatabase *db) &amp;#123;        if ([self.db open]) &amp;#123;">
+<meta property="og:updated_time" content="2018-01-30T07:30:04.560Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hexo">
+<meta name="twitter:title" content="在block 中修改外部变量的方法">
+<meta name="twitter:description" content="问题产生场景:使用 FMDB 时，要求线程安全，就使用FMDatabaseQueue，所有操作都在 inDatabase 中操作，保证数据库操作的串行，不会多线程修改数据库操作数据错乱。代码如下： 12345678910[self.queue inDatabase:^(FMDatabase *db) &amp;#123;        if ([self.db open]) &amp;#123;">
 
 
 
@@ -114,13 +118,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/01/30/在block-中修改外部变量的方法/"/>
 
 
 
 
 
-  <title>Hexo</title>
+  <title>在block 中修改外部变量的方法 | Hexo</title>
   
 
 
@@ -139,8 +143,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -213,9 +216,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -245,9 +248,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/30/在block-中修改外部变量的方法/" itemprop="url">在block 中修改外部变量的方法</a></h1>
+          <h1 class="post-title" itemprop="name headline">在block 中修改外部变量的方法</h1>
         
 
         <div class="post-meta">
@@ -297,17 +298,13 @@
       
 
       
-        
-          
-            <h3 id="问题产生场景"><a href="#问题产生场景" class="headerlink" title="问题产生场景:"></a>问题产生场景:</h3><p>使用 FMDB 时，要求线程安全，就使用FMDatabaseQueue，所有操作都在 inDatabase 中操作，保证数据库操作的串行，不会多线程修改数据库操作数据错乱。代码如下：</p>
+        <h3 id="问题产生场景"><a href="#问题产生场景" class="headerlink" title="问题产生场景:"></a>问题产生场景:</h3><p>使用 FMDB 时，要求线程安全，就使用FMDatabaseQueue，所有操作都在 inDatabase 中操作，保证数据库操作的串行，不会多线程修改数据库操作数据错乱。代码如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[self.queue inDatabase:^(FMDatabase *db) &#123;</span><br><span class="line">        if ([self.db open]) &#123;</span><br><span class="line">            NSLog(@&quot;打开数据库成功&quot;);</span><br><span class="line">            //创建表格</span><br><span class="line">			  return YES;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            NSLog(@&quot;打开数据库失败&quot;);</span><br><span class="line">            return NO;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>此时发现 block 中不能直接 return， 因为只能 return 该 block， 不会 return 当前方法。</p>
 <p>进而发现在 block 中也无法修改外边基本数据类型，因为闭包是直接拷贝外部变量值，在闭包中不能改变外部变量值。于是问题变成，<strong>如果在闭包中修改外部变量值。</strong></p>
 <h3 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">//用__block 修饰</span><br><span class="line">__block BOOL success;</span><br><span class="line">[self.queue inDatabase:^(FMDatabase *db) &#123;</span><br><span class="line">        if ([self.db open]) &#123;</span><br><span class="line">            NSLog(@&quot;打开数据库成功&quot;);</span><br><span class="line">            //创建表格</span><br><span class="line">              success = YES;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            NSLog(@&quot;打开数据库失败&quot;);</span><br><span class="line">            success = NO;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">return success;</span><br></pre></td></tr></table></figure>
 <p>__block 的作用就是，把栈中的外部变量拷贝到堆上，达到在闭包中访问的效果。</p>
 
-          
-        
       
     </div>
     
@@ -324,132 +321,28 @@
       
 
       
-
-      
-
       
       
-        <div class="post-eof"></div>
+
       
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/24/article-title/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="John Doe">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/24/article-title/" itemprop="url">article title</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
             
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posté le</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-01-24T09:50:51+08:00">
-                2018-01-24
-              </time>
+              <a href="/2018/01/24/article-title/" rel="next" title="article title">
+                <i class="fa fa-chevron-left"></i> article title
+              </a>
             
+          </div>
 
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
             
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
+          </div>
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <h3 id="First-post"><a href="#First-post" class="headerlink" title="First post"></a>First post</h3><p>第一次使用 hexo搭建博客, one step.</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -459,10 +352,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -470,6 +364,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -490,8 +388,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table Des Matières
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Ensemble
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -533,6 +440,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题产生场景"><span class="nav-number">1.</span> <span class="nav-text">问题产生场景:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方法："><span class="nav-number">2.</span> <span class="nav-text">解决方法：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -666,6 +589,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
